@@ -46,7 +46,7 @@ module Main where
                 | xs !! 1 == "Z" = (6+) . win $ xs !! 0
                 | otherwise = 0
                     where
-                        loose :: String -> Intq
+                        loose :: String -> Int
                         loose x
                             | x == "A" = 3 -- We want to loose and elf played rock so we play scissors = 3
                             | x == "B" = 1 -- We want to loose and elf played paper so we play rock = 1
