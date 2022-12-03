@@ -26,3 +26,8 @@ hs_err_pid*
 .idea
 out
 
+#sbt
+src/day3/.bsp
+src/day3/project
+src/day3/target
+
