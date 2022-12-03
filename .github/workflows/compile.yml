@@ -7,7 +7,7 @@ on:
 jobs:
   buildJava:
     runs-on: ubuntu-latest
-    
+
     steps:
     - uses: actions/checkout@v3
     - name: Set up JDK 19
@@ -17,13 +17,23 @@ jobs:
         distribution: 'adopt'
     - name: Compile with JavaC
       run: javac -encoding utf-8 $(find . -type f -name "*.java")
-  
+
   buildHaskell:
     runs-on: ubuntu-latest
-    
+
     steps:
     - uses: actions/checkout@v3
     - name: Install GHC
       run: sudo apt install ghc -y
     - name: Compile with GHC
       run: ghc $(find . -type f -name "*.hs")
+
+  buildScala:
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v3
+    - name: Install Scala 3
+      run: curl -fL https://github.com/coursier/launchers/raw/master/cs-x86_64-pc-linux.gz | gzip -d > cs && chmod +x cs && ./cs setup
+    - name: Compile with Scalac
+      run: scalac --deprecation $(find . -type f -name "*.scala")
