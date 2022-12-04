@@ -27,11 +27,7 @@ local function part2()
         local elf1 = { tonumber(SplitByHyphen(line[1])[1]), tonumber(SplitByHyphen(line[1])[2]) }
         local elf2 = { tonumber(SplitByHyphen(line[2])[1]), tonumber(SplitByHyphen(line[2])[2]) }
 
-        if elf1[1] <= elf2[1] and elf1[1] >= elf2[2] then
-            reductions = reductions + 1
-        elseif elf1[1] >= elf2[1] and elf1[1] <= elf2[2] then
-            reductions = reductions + 1
-        elseif elf1[1] <= elf2[2] and elf1[2] >= elf2[1] then
+        if elf1[1] <= elf2[2] and elf1[2] >= elf2[1] then
             reductions = reductions + 1
         elseif elf1[1] >= elf2[2] and elf1[2] <= elf2[1] then
             reductions = reductions + 1
