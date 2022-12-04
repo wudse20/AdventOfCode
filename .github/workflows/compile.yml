@@ -42,3 +42,18 @@ jobs:
       run: cd src/day3
     - name: Compile Scala with SBT
       run: sbt compile
+
+  buildLUA:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - uses: actions/checkout@v3
+    - name: Install LUA
+      run: sudo apt install lua5.3 -y
+    - name: Change directory
+      run: cd src/day4
+    - name: PWD
+      run: pwd
+    - name: Run, since not compiled
+      run: lua day4.lua
+    
