@@ -49,4 +49,17 @@ jobs:
     - name: Install LUA
       run: sudo apt install lua5.3 -y
     - name: Run, since not compiled
-      run: cd src/day4 && pwd && lua day4.lua  
+      run: cd src/day4 && pwd && lua day4.lua
+
+  buildDotNet:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - uses: actions/checkout@v3
+    - name: Setup dotnet
+    - uses: actions/setup-dotnet@v2
+      with:
+          dotnet-version: '7.0.100'
+    - name: Build dotnet
+      run: cd src/day5/ && pwd && dotnet build
+    
