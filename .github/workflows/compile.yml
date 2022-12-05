@@ -56,7 +56,6 @@ jobs:
     
     steps:
     - uses: actions/checkout@v3
-    - name: Setup dotnet
     - uses: actions/setup-dotnet@v2
       with:
           dotnet-version: '7.0.100'
