@@ -11,6 +11,7 @@ namespace solution
         {
             ParseInput();
             Console.WriteLine("Part 1: {0}", Part1());
+            Console.WriteLine("Part 2: {0}", Part2());
         }
 
         static String Part1()
@@ -38,6 +39,45 @@ namespace solution
 
             var sb = new StringBuilder();
             
+            foreach (var stack in piles)
+            {
+                sb.Append(stack.Peek());
+            }
+
+            return sb.ToString();
+        }
+
+        static string Part2()
+        {
+            // Converting form queues to stacks,
+            // since a deque is not in the standard
+            // library, and was to lazy to implement
+            // myself.
+            var piles = stacks.Select(q => q.Reverse())
+                              .Select(q => new Stack<string>(q))
+                              .ToList();
+
+            foreach (var inst in instructions)
+            {
+                var amount = inst.amount;
+                var to = inst.to;
+                var from = inst.from;
+
+                var tmpStack = new Stack<string>();
+                for (int i = 0; i < amount; i++)
+                {
+                    var item = piles[from].Pop();
+                    tmpStack.Push(item);
+                }
+
+                foreach (var item in tmpStack)
+                {
+                    piles[to].Push(item);
+                }
+            }
+
+            var sb = new StringBuilder();
+
             foreach (var stack in piles)
             {
                 sb.Append(stack.Peek());
