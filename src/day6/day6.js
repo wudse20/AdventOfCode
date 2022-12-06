@@ -1,13 +1,13 @@
 "use strict";
 const fs = require("fs");
 
-function part1() {
+function solution(size) {
     const input = fs.readFileSync("input.txt").toString();
 
     for (let i = 0; i < input.length; i++) {
         let tmp = "";
         let set = new Set();
-        for (let ii = 0; i < input.length && ii < 4; ii++) {
+        for (let ii = 0; i < input.length && ii < +size; ii++) {
             if (set.has(input[i + ii])) {
                 break;
             } else {
@@ -16,12 +16,13 @@ function part1() {
             }
         }
 
-        if (set.size === 4) {
-            return i + 4;
+        if (set.size === size) {
+            return i + size;
         }
     }
 
     return -1;
 }
 
-console.log("Part 1: ", part1());
+console.log("Part 1: ", solution(4));
+console.log("Part 2: ", solution(14))
