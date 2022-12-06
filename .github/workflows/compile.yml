@@ -61,4 +61,16 @@ jobs:
           dotnet-version: '7.0.100'
     - name: Build dotnet
       run: cd src/day5/ && pwd && dotnet build
+
+  buildNodeJS:
+    runs-on: ubuntu-latest
     
+    steps:
+    - uses: actions/checkout@v3
+    - name: Setup NodeJSä
+      uses: actions/setup-node@v3
+      with:
+        node-version: 18.x
+        cache: npm
+    - name: Run, since not compiled
+      run: cd src/day6/ && pwd && node day6.js
