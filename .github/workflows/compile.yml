@@ -67,10 +67,7 @@ jobs:
     
     steps:
     - uses: actions/checkout@v3
-    - name: Setup NodeJSä
-      uses: actions/setup-node@v3
-      with:
-        node-version: 18.x
-        cache: npm
+    - name: Setup NodeJS
+      run: sudo apt install nodejs -y
     - name: Run, since not compiled
       run: cd src/day6/ && pwd && node day6.js
