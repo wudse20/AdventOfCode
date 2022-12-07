@@ -71,3 +71,17 @@ jobs:
       run: sudo apt install nodejs -y
     - name: Run, since not compiled
       run: cd src/day6/ && pwd && node day6.js
+      
+  buildTypeScript:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - uses: action/checkout@v3
+    - name: Setup NodeJS
+      run: sudo apt install nodejs -y
+    - name: Install typescript
+      run: npm install typescript -g
+    - name: Install node types
+      run: npm i @types/node -g
+    - name: Transpile TypeScript
+      run: tsc $(find . -type f -name "*.ts")
