@@ -84,4 +84,4 @@ jobs:
     - name: Install node types
       run: npm i @types/node -g
     - name: Transpile TypeScript
-      run: tsc $(find . -type f -name "*.ts")
+      run: cd src/day7/ && pwd && tsc day7.ts
