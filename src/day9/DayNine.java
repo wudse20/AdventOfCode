@@ -12,7 +12,8 @@ public class DayNine
 {
     public static void main(String[] args) throws IOException
     {
-        System.out.printf("Part 1: %d", part1());
+        System.out.printf("Part 1: %d\n", part1());
+        System.out.printf("Part 2: %d\n", part2());
     }
 
     private static int part1() throws IOException
@@ -25,7 +26,7 @@ public class DayNine
         for (var line : input)
         {
             var dir = line.charAt(0);
-            var count = Integer.parseInt(line.split(" ")[1]);
+            var count = Integer.parseInt(line.split("\\s+")[1]);
             positions.add(tail);
 
             for (int i = 1; i <= count; i++)
@@ -39,6 +40,44 @@ public class DayNine
 
                 tail = checkAndMoveTail(head, tail);
                 positions.add(tail);
+            }
+        }
+
+        return positions.size();
+    }
+
+    private static int part2() throws IOException
+    {
+        var input = getFileContent("./src/day9/input.txt").split("\n");
+        var positions = new HashSet<Pos>();
+        var head = Pos.ORIGIN;
+        var tails = new ArrayList<Pos>();
+
+        for (int i = 0; i < 9; i++)
+            tails.add(Pos.ORIGIN);
+
+        for (var line : input)
+        {
+            var dir = line.charAt(0);
+            var count = Integer.parseInt(line.split("\\s+")[1]);
+            positions.add(tails.get(tails.size() - 1));
+
+            for (int i = 1; i <= count; i++)
+            {
+                switch (dir) {
+                    case 'R' -> head = head.right();
+                    case 'L' -> head = head.left();
+                    case 'U' -> head = head.up();
+                    case 'D' -> head = head.down();
+                }
+
+
+                for (int ii = 0; ii < tails.size(); ii++) {
+                    var parent = ii == 0 ? head : tails.get(ii - 1);
+                    tails.set(ii, checkAndMoveTail(parent, tails.get(ii)));
+                }
+
+                positions.add(tails.get(tails.size() - 1));
             }
         }
 
