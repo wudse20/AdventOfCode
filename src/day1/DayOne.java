@@ -4,7 +4,6 @@ import java.io.BufferedInputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
-import java.util.Comparator;
 import java.util.PriorityQueue;
 
 public class DayOne
@@ -118,7 +117,8 @@ public class DayOne
         return max.stream().reduce(0, Integer::sum);
     }
 
-    private static byte[] getFileContent(String pathname) throws IOException {
+    private static byte[] getFileContent(String pathname) throws IOException
+    {
         var f = new File(pathname);
         var bis = new BufferedInputStream(new FileInputStream(f));
         var bytes = bis.readAllBytes();
