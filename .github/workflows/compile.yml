@@ -95,3 +95,13 @@ jobs:
       run: sudo apt install python3 -y
     - name: Run since not compiled
       run: cd src/day8/ && pwd && python3 day8.py
+
+  buildC:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - uses: actions/checkout@v3
+    - name: install GCC
+      run: sudo apt install gcc -y
+    - name: compile c code
+      run: gcc $(find . -type f -name "*.c")
