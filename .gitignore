@@ -34,3 +34,5 @@ src/day3/target
 #scala
 *.tasty
 
+#out files
+*.out
