@@ -59,8 +59,10 @@ jobs:
     - uses: actions/setup-dotnet@v2
       with:
           dotnet-version: '7.0.100'
-    - name: Build dotnet
+    - name: Build dotnet day 5
       run: cd src/day5/ && pwd && dotnet build
+    - name: Build dotnet day 11
+      run: cd src/day11/ && pwd && dotnet build
 
   buildNodeJS:
     runs-on: ubuntu-latest
