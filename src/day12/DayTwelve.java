@@ -4,15 +4,42 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
+import java.util.List;
 
 public class DayTwelve
 {
     public static void main(String[] args) throws IOException
     {
         System.out.printf("Part 1: %d%n", part1());
+        System.out.printf("Part 2: %d%n", part2());
     }
+
+    private static int part1() throws IOException
+    {
+        var grid = prepGrid("./src/day12/input.txt");
+        return find(grid, find(grid, 'S'));
+    }
+
+    private static int part2() throws IOException
+    {
+        var grid = prepGrid("./src/day12/input.txt");
+        var starts = findAll(grid, 'a', 'S');
+        return starts.stream()
+                     .mapToInt(s -> find(grid, s))
+                     .min()
+                     .orElse(Integer.MAX_VALUE);
+    }
+
+    private static int[][] prepGrid(String pathname) throws IOException
+    {
+        return Arrays.stream(getFileContent(pathname).split("\n"))
+                .map(s -> s.chars().toArray())
+                .toArray(int[][]::new);
+    }
+
 
     private static Pos find(int[][] grid, char target)
     {
@@ -28,16 +55,30 @@ public class DayTwelve
         return null;
     }
 
-    private static int part1() throws IOException
+    private static List<Pos> findAll(int[][] grid, char... target)
     {
-        var grid =
-            Arrays.stream(getFileContent("./src/day12/input.txt").split("\n"))
-                  .map(s -> s.chars().toArray())
-                  .toArray(int[][]::new);
+        var res = new ArrayList<Pos>();
 
+        for (int i = 0; i < grid.length; i++)
+        {
+            for (int ii = 0; ii < grid[i].length; ii++)
+            {
+                for (var t : target)
+                {
+                    if (grid[i][ii] == t)
+                        res.add(new Pos(i, ii));
+                }
+            }
+        }
+
+        return res;
+    }
+
+    private static int find(int[][] grid, Pos start)
+    {
         var visited = new HashSet<Pos>();
         var currentLevel = new HashSet<Pos>();
-        currentLevel.add(find(grid, 'S'));
+        currentLevel.add(start);
 
         var steps = 0;
         while (!currentLevel.isEmpty())
