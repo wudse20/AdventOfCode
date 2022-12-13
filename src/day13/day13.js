@@ -36,8 +36,9 @@ function compareSignals(a, b) {
 function part1() {
     const input = fs.readFileSync("input.txt")
                     .toString()
-                    .split("\r\n\r\n")
-                    .map(x => x.split("\r\n"))
+                    .replaceAll("\r", "")
+                    .split("\n\n")
+                    .map(x => x.split("\n"))
                     .map(xs => xs.map(eval));
 
     let res = 0;
