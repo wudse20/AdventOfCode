@@ -53,4 +53,22 @@ function part1() {
     return res;
 }
 
+function part2() {
+    const input = fs.readFileSync("input.txt")
+                    .toString()
+                    .replaceAll("\r", "")
+                    .split("\n")
+                    .filter(x => x !== "")
+                    .map(eval)
+    const divider1 = [[2]];
+    const divider2 = [[6]];
+    input.push(divider1);
+    input.push(divider2);
+    input.sort((a, b) => compareSignals(a, b));
+    const a = input.indexOf(divider1) + 1;
+    const b = input.indexOf(divider2) + 1;
+    return a * b;
+}
+
 console.log("Part 1:", part1())
+console.log("Part 2:", part2());
