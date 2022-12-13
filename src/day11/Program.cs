@@ -81,6 +81,7 @@
             foreach(var monkey in monkies)
                 pq.Enqueue(monkey.count, -monkey.count);
 
+
             return pq.Dequeue() * pq.Dequeue();
         }
 
