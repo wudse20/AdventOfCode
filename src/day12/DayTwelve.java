@@ -36,8 +36,8 @@ public class DayTwelve
     private static int[][] prepGrid(String pathname) throws IOException
     {
         return Arrays.stream(getFileContent(pathname).split("\n"))
-                .map(s -> s.chars().toArray())
-                .toArray(int[][]::new);
+                     .map(s -> s.chars().toArray())
+                     .toArray(int[][]::new);
     }
 
 
