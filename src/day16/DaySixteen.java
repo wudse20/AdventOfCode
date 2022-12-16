@@ -13,13 +13,13 @@ import java.util.List;
 import java.util.Map;
 import java.util.PriorityQueue;
 import java.util.Set;
-import java.util.concurrent.atomic.AtomicInteger;
 
 public class DaySixteen
 {
     public static void main(String[] args) throws IOException
     {
         System.out.printf("Part 1: %d%n", part1());
+        System.out.printf("Part 2: %d%n", part2());
     }
 
     static Set<String> openableValves(Map<String,Valve> valves)
@@ -73,22 +73,7 @@ public class DaySixteen
 
     static int part1() throws IOException
     {
-        var lines = getFileContent("./src/day16/input.txt");
-        var valves = new HashMap<String, Valve>();
-
-        for (var l : lines)
-        {
-            var middle = l.split(";");
-            var first = middle[0].split(" ");
-            var name = first[1];
-            var flowRate = Integer.parseInt(first[4].split("=")[1]);
-            var neighbours =
-                middle[1].contains("valves") ?
-                middle[1].split("valves")[1].trim().split(", ") :
-                new String[] { middle[1].trim().split("\\s+")[4] };
-
-            valves.put(name, new Valve(name, flowRate, neighbours));
-        }
+        var valves = parse("./src/day16/input.txt");
 
         var openable = openableValves(valves);
         var shortest = findShortest(valves, openable);
@@ -128,6 +113,89 @@ public class DaySixteen
         return res;
     }
 
+    static int part2() throws IOException
+    {
+        var valves = parse("./src/day16/input.txt");
+        var openable = openableValves(valves);
+        var shortest = findShortest(valves, openable);
+
+        var scoreOpened = new HashMap<String, Score>();
+        var highestSore = 0;
+        var journeys = new LinkedList<Journey>();
+        journeys.add(new Journey(0, "AA", new HashSet<>(), 0));
+
+        while (!journeys.isEmpty())
+        {
+            var journey = journeys.remove();
+            var openableHere = new HashSet<>(openable);
+            openableHere.removeAll(journey.opened);
+            var fpm = 0;
+
+            for (var flowing : journey.opened)
+                fpm += valves.get(flowing).flow;
+
+            for (var dest : openableHere)
+            {
+                var tt = shortest.get(journey.location + dest) + 1;
+
+                if (journey.time + tt < 30)
+                {
+                    var nowOpen = new HashSet<>(journey.opened);
+                    nowOpen.add(dest);
+                    journeys.add(new Journey(
+                        journey.time + tt, dest, nowOpen, journey.score + tt * fpm
+                    ));
+                }
+            }
+
+            var doNothing = journey.score + (26 - journey.time) * fpm;
+
+            var openedStr = String.join(",", journey.opened().stream().sorted().toList());
+
+            if (!scoreOpened.containsKey(openedStr) || scoreOpened.get(openedStr).score() < doNothing)
+                scoreOpened.put(openedStr, new Score(journey.opened(), doNothing));
+        }
+
+        var scoreOpenedList = new ArrayList<>(scoreOpened.values());
+        for (int i = 0; i < scoreOpenedList.size(); i++)
+        {
+            var s1 = scoreOpenedList.get(i);
+
+            for (var ii = i + 1; ii < scoreOpenedList.size(); ii++)
+            {
+                var s2 = scoreOpenedList.get(ii);
+                var intersection = new HashSet<>(s1.opened);
+                intersection.retainAll(s2.opened);
+
+                if (intersection.isEmpty() && s1.score() + s2.score() > highestSore)
+                    highestSore = s1.score() + s2.score();
+            }
+        }
+
+        return highestSore;
+    }
+
+    private static HashMap<String, Valve> parse(String path) throws IOException
+    {
+        var lines = getFileContent(path);
+        var valves = new HashMap<String, Valve>();
+
+        for (var l : lines)
+        {
+            var middle = l.split(";");
+            var first = middle[0].split(" ");
+            var name = first[1];
+            var flowRate = Integer.parseInt(first[4].split("=")[1]);
+            var neighbours =
+                    middle[1].contains("valves") ?
+                            middle[1].split("valves")[1].trim().split(", ") :
+                            new String[] { middle[1].trim().split("\\s+")[4] };
+
+            valves.put(name, new Valve(name, flowRate, neighbours));
+        }
+        return valves;
+    }
+
     static List<String> getFileContent(String pathname) throws IOException
     {
         var f = new File(pathname);
@@ -142,6 +210,7 @@ public class DaySixteen
         return res;
     }
 
+    record Score(Set<String> opened, int score) {}
     record Journey(int time, String location, Set<String> opened, int score) {}
     private record Valve(String name, int flow, String[] neighbours)
     {
