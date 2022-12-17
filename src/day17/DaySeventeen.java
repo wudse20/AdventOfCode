@@ -5,32 +5,36 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
+import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
 public class DaySeventeen
 {
     public static void main(String[] args) throws IOException
     {
-        System.out.printf("Part 1: %d%n", part1());
+        System.out.printf("Part 1: %d%n", part1(2022));
+        System.out.printf("Part 2: %d%n", part2());
     }
 
-    static int part1() throws IOException
+    static long part1(long sims) throws IOException
     {
         var streams = parse("./src/day17/input.txt");
         var used = new HashSet<Pos>();
         var figure = new HashSet<Pos>();
-        var startY = 4;
-        var figCount = 0;
+        var startY = 4L;
+        var figCount = 0L;
 
         for (int i = 0; i < 7; i++)
             used.add(new Pos(i, 0));
 
-        for (int i = 0; i < 2022; i++)
+        for (int i = 0; i < sims; i++)
         {
-            addFigure(figure, figCount++ % 5, startY);
+            addFigure(figure, (int) (figCount++ % 5), startY);
 
             while (true)
             {
@@ -73,19 +77,19 @@ public class DaySeventeen
                 }
             }
 
-            startY = used.stream().mapToInt(Pos::y).max().orElse(Integer.MAX_VALUE) + 4;
+            startY = used.parallelStream().mapToLong(Pos::y).max().orElse(Integer.MAX_VALUE) + 4;
         }
 
-        return used.stream().mapToInt(Pos::y).max().orElse(Integer.MAX_VALUE);
+        return used.parallelStream().mapToLong(Pos::y).max().orElse(Integer.MAX_VALUE);
     }
 
     static void visualize(Set<Pos> used, Set<Pos> fig)
     {
-        var maxY = used.stream().mapToInt(Pos::y).reduce(Integer.MIN_VALUE, Math::max);
-        maxY = Math.max(maxY, fig.stream().mapToInt(Pos::y).reduce(Integer.MIN_VALUE, Math::max));
+        var maxY = used.parallelStream().mapToLong(Pos::y).reduce(Integer.MIN_VALUE, Math::max);
+        maxY = Math.max(maxY, fig.parallelStream().mapToLong(Pos::y).reduce(Integer.MIN_VALUE, Math::max));
         var sb = new StringBuilder();
 
-        for (int y = maxY; y >= 0; y--)
+        for (var y = maxY; y >= 0; y--)
         {
             sb.append(y != 0 ? '|' : '+');
             for (int x = 0; x < 7; x++)
@@ -104,7 +108,7 @@ public class DaySeventeen
         System.out.println(sb);
     }
 
-    static void addFigure(Set<Pos> figure, int index, int y)
+    static void addFigure(Set<Pos> figure, int index, long y)
     {
         figure.clear();
 
@@ -182,7 +186,102 @@ public class DaySeventeen
         return new JetStream(al);
     }
 
-    private record Pos(int x, int y)
+    public static long part2() throws IOException
+    {
+        var chars =
+            parse("./src/day17/input.txt").stream
+                                                   .toString()
+                                                   .replaceAll(",", "")
+                                                   .replaceAll(" ", "")
+                                                   .replaceAll("\\[", "")
+                                                   .replaceAll("]", "")
+                                                   .toCharArray();
+
+        var numberOfRocks = 1000000000000L;
+        var cycleStart = sim(numberOfRocks, chars, s -> s.cycleReset && s.fallenRocks != 0);
+        var nextCycle = sim(numberOfRocks, chars, s -> s.cycleReset && s.fallenRocks > cycleStart.fallenRocks);
+        var rocksPerCycle = nextCycle.fallenRocks - cycleStart.fallenRocks;
+        var numberOfCycles = numberOfRocks / rocksPerCycle;
+        var totalRocks = rocksPerCycle * numberOfCycles + cycleStart.fallenRocks;
+        var heightPerCycle = nextCycle.height - cycleStart.height;
+        var totalHeight = heightPerCycle * numberOfCycles + cycleStart.height;
+        var overshoot = totalRocks - numberOfRocks;
+        var atOvershoot = sim(numberOfRocks, chars, s -> s.fallenRocks == cycleStart.fallenRocks - overshoot);
+        return totalHeight - (cycleStart.height - atOvershoot.height);
+    }
+
+    private static State sim(long iterations, char[] chars, Predicate<State> exitCondition)
+    {
+        var shapes = new Grid[] {
+            new Grid(new char[][]{ "####".toCharArray()} ),
+            new Grid(new HashMap<>(Map.of(
+                new Pos(1, 0), '#', new Pos(0, 1), '#',
+                new Pos(1, 1), '#', new Pos(2, 1), '#',
+                new Pos(1, 2), '#'
+            ))),
+            new Grid(new HashMap<>(Map.of(
+                new Pos(2, 0), '#', new Pos(0, 2), '#',
+                new Pos(1, 2), '#', new Pos(2, 2), '#',
+                new Pos(2, 1), '#'
+            ))),
+            new Grid(new char[][] { { '#' }, { '#' }, { '#' }, { '#' } }),
+            new Grid(new char[][] { { '#', '#' }, { '#', '#' } })
+        };
+
+        var g = new Grid(new char[][]{"+-------+".toCharArray()});
+        addWall(g, 4);
+
+        var highest = 0L;
+        var fallenRocks = 0L;
+        var s = shapes[0].move(3, highest - 4);
+
+        for(int i = 0, shapeIndex = 0; fallenRocks < iterations; i++)
+        {
+            if(i >= chars.length) i = 0;
+
+            var state = new State(Math.abs(highest), fallenRocks, i==0);
+            if (exitCondition.test(state))
+                return state;
+
+            var c = chars[i];
+            var moved = s.move(c == '>' ? 1 : -1, 0);
+            if (g.canPlace(moved))
+                s = moved;
+
+            moved = s.move(0, 1);
+            if (g.canPlace(moved))
+            {
+                s = moved;
+            }
+            else
+            {
+                g.place(s);
+                shapeIndex = (shapeIndex + 1) % shapes.length;
+                var oldHighest = highest;
+                highest = Math.min(s.minY(), highest);
+                addWall(g, Math.toIntExact((oldHighest - highest) + shapes[shapeIndex].height()));
+                s = shapes[shapeIndex].move(3, highest - 3 - shapes[shapeIndex].height());
+                fallenRocks++;
+            }
+        }
+
+        return new State(Math.abs(highest), iterations, false);
+    }
+
+    private static void addWall(Grid g, int n)
+    {
+        var lowestY = g.minY()-1;
+        for (int i = 0; i<n; i++)
+        {
+            g.set(new Pos(0, lowestY-i), '|');
+            g.set(new Pos(8, lowestY-i), '|');
+        }
+    }
+
+    public record State(long height, long fallenRocks, boolean cycleReset) {}
+    private record Pair<A, B>(A a, B b) {}
+
+    private record Pos(long x, long y)
     {
         Pos moveDown()
         {
@@ -197,6 +296,11 @@ public class DaySeventeen
         Pos moveRight()
         {
             return new Pos(x + 1, y);
+        }
+
+        Pos move(long x, long y)
+        {
+            return new Pos(x() + x, y() + y);
         }
     }
 
@@ -213,7 +317,86 @@ public class DaySeventeen
 
         private char next()
         {
-            return stream.get(count++ % stream.size());
+            count = count % stream.size();
+            var val = stream.get((int) count);
+            count++;
+            return val;
         }
+    }
+
+    public static class Grid
+    {
+        private final Map<Pos, Character> grid;
+
+        public Grid(char[][] g)
+        {
+            this();
+            for (int i = 0; i < g.length; i++)
+            {
+                for (int ii = 0; ii < g[0].length; ii++)
+                    grid.put(new Pos(ii, i), g[i][ii]);
+            }
+        }
+
+        public Grid(Map<Pos, Character> grid)
+        {
+            this.grid = grid;
+        }
+
+        public Grid()
+        {
+            this.grid = new HashMap<>();
+        }
+
+        public void set(Pos p, char c)
+        {
+            grid.put(p, c);
+        }
+
+        public boolean canPlace(Grid g)
+        {
+            return g.grid
+                    .keySet()
+                    .parallelStream()
+                    .noneMatch(grid::containsKey);
+        }
+
+        public long minY()
+        {
+            return grid.keySet()
+                       .parallelStream()
+                       .mapToLong(e -> e.y)
+                       .min()
+                       .orElse(0);
+        }
+
+        public long maxY()
+        {
+            return grid.keySet()
+                       .parallelStream()
+                       .mapToLong(e -> e.y)
+                       .max()
+                       .orElse(0);
+        }
+
+        public Grid move(long x, long y)
+        {
+            return new Grid(
+                grid.entrySet()
+                    .parallelStream()
+                    .map(e -> new Pair<>(e.getKey().move(x, y), e.getValue()))
+                    .collect(Collectors.toMap(Pair::a, Pair::b)));
+        }
+
+        public void place(Grid s)
+        {
+            s.grid.forEach(this::set);
+        }
+
+        public long height()
+        {
+            return maxY() + 1 - minY();
+        }
+
     }
 }
